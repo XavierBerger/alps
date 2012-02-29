@@ -1,4 +1,4 @@
-#Alps' script help
+Alps' script help page
 
 = Introduction =
 
