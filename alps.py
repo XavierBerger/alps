@@ -878,8 +878,6 @@ def main():
   global stopped, options, database, address ,verbose, logging, databasemanager
   
   try:
-    debug(0,"ALPS server is starting.")
-    
     #Process command line arguments
     OptionParser.format_epilog = lambda self, formatter: self.epilog
     parser = OptionParser(version="0.0 development in progress", epilog=
@@ -907,6 +905,8 @@ Debug level:
     verbose = options.verbose
     logging = options.logging
     address = options.address
+    
+    debug(0,"ALPS server is starting.")
     
     #Initialize Database Manager
     databasemanager = DatabaseManager()
