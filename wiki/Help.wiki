@@ -1,0 +1,22 @@
+{{{
+Usage: alps.py [options]
+
+Options:
+  --version             show program's version number and exit
+  -h, --help            show this help message and exit
+  -p PORT, --port=PORT  port used by alps' web server (default=8080)
+  -a ADDRESS, --address=ADDRESS
+                        address used by alps' web server (default=127.0.0.1)
+  -d DATABASE, --database=DATABASE
+                        database to store shortcuts (default=./alps.sqlite)
+  -l LOGGING, --logging=LOGGING
+                        logging output (default=stderr)
+  -v                    debug level (default=0)
+
+Official website: http://code.google.com/p/alps/
+
+Debug level:
+  1: Reserved for development
+  2: Database access
+  3: Internal function call
+}}}
