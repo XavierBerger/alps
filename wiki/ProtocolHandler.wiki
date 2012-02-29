@@ -1,0 +1,94 @@
+#How to use custom protocol handler to start application from html link
+
+= Linux =
+A custom xdg-open script can handle custom protocol and allow autologin on every components.
+
+1. copy /usr/bin/xdg-open to /usr/bin/xdg-open.dist
+
+2. create a new /usr/bin/xdg-open with the following content
+
+{{{
+#!/bin/bash
+# Adding protocol handlers with xdg-open
+# License: GPLv2
+
+proto=$(echo $1 | cut -d: -f1)
+ip=$(echo $1 | cut -d: -f2 | cut -d/ -f3)
+port=$(echo $1 | cut -d: -f3 | cut -d/ -f1)
+cmd=$(echo $1 | cut -d? -f1 | cut -d/ -f4)
+params=$(echo $1 | cut -d? -f2 | sed "s/&/ /g" | sed "s/%20/ /g")
+if [ x$1 = x$params ] ; then
+	params="";
+fi
+
+case $proto in
+  ssh)
+        command="ssh -X $ip"
+        if [ ! -z "$port" ]; then
+                command="$command -p $port"
+        fi
+        if [ ! -z "$cmd" ]; then
+                if [ "$cmd" = "minicom" ]; then
+                        command="$command -t"
+			echo /usr/bin/gnome-terminal -e "$command $cmd $params"&
+                        /usr/bin/gnome-terminal -e "$command $cmd $params"&
+                else
+			echo $command $cmd $params
+                        $command $cmd $params
+                fi
+        else
+		echo /usr/bin/gnome-terminal -e "$command $params"&
+		/usr/bin/gnome-terminal -e "$command $params"&
+        fi
+  ;;
+  rdp)
+	rdesktop $ip:$port
+  ;;
+  telnet)
+	    cmd="spawn telnet $ip $port"
+        for iloop in $params; do
+      		cmd="$cmd; expect \\\""$(echo $iloop | cut -d= -f1 | sed "s/%3E/\>/" | sed "s/%20/ /")"\\\""
+      		cmd="$cmd; send \\\""$(echo $iloop | cut -d= -f2)"\n\\\""
+    	done
+    	cmd="/usr/bin/expect -c '$cmd; interact'"
+         
+       eval /usr/bin/gnome-terminal -e "\"$cmd\"" &
+  ;;
+  apt)
+        /usr/bin/apturl-gtk $( echo $@ | sed "s/\/$//" )
+  ;;
+  *)
+        /usr/bin/xdg-open.dist $@
+  ;;
+esac
+
+}}}
+
+= Windows =
+1. On your local workstation, download the following application:
+http://customurl.codeplex.com/
+
+2. Once the executable is launched click Add and enter the following (the following assumes you are using Putty for SSH / Telnet, and that putty.exe is in the PATH, otherwise, provide the full path to putty.exe):
+
+ * Protocol: rdp
+ * Application: mstsc.exe
+ * Arguments: /v:%Host%:%Port%
+
+Click OK, and click Add again:
+
+ * Protocol: ssh
+ * Application: putty.exe
+ * Arguments: -ssh %Host% -P %Port%
+
+Click OK, and click Add again:
+
+ * Protocol: telnet
+ * Application: putty.exe
+ * Arguments: -telnet %Host% -P %Port%
+
+Click OK.
+
+You can now close the application and open Firefox.
+
+Once you will click on a link it will prompt you to select a handlers.
+
