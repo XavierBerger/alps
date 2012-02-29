@@ -1,5 +1,5 @@
-{{{
-Usage: alps.py [options]
+`laptop:~/devel/$ ./alps.py --help`
+<pre>Usage: alps.py [options]
 
 Options:
   --version             show program's version number and exit
@@ -19,4 +19,4 @@ Debug level:
   1: Reserved for development
   2: Database access
   3: Internal function call
-}}}
+</pre>
