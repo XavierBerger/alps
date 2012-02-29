@@ -6,7 +6,7 @@ This page is showing the result of the command ./alps.py --help
 
 
 = Details =
-
+{{{
 Usage: alps.py [options]
 
 Options:
@@ -27,4 +27,4 @@ Debug level:
   1: Reserved for development
   2: Database access
   3: Internal function call
-
+}}}
