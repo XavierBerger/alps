@@ -19,7 +19,8 @@ BEGIN TRANSACTION;
 COMMIT;"""
 C_IDSYS,C_NAME,C_IDTAB,C_COMMENT,C_ORDER,C_IDCOMPONENT,C_COMMAND,C_WIDTH,C_HEIGHT,C_BACKGROUND = (0,1,2,3,4,2,3,2,3,4)
 
-database = os.curdir + os.sep + 'alps.sqlite'
+root=os.path.realpath(os.path.dirname(__file__)) + os.sep
+database = root + 'alps.sqlite'
 verbose=0
 logging="stderr" 
 address="127.0.0.1"
@@ -733,7 +734,7 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         if ( ( self.path in scripts ) or 
              ( self.path in csss ) or
              ( self.path in images ) ):
-          fileToSend = open(os.curdir + os.sep + self.path)
+          fileToSend = open(root + self.path)
           self.wfile.write(fileToSend.read())
           fileToSend.close()
         return ""
