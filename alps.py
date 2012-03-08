@@ -339,6 +339,7 @@ class MainPage():
     _addtabDialog = addDialog('addtab')
     _deletetabDialog = deleteDialog('deletetab')
     _addcomponentDialog = addDialog('addcomponent')
+    #_editcomponentDialog = addDialog('editcomponent')
     _deletecomponentDialog = deleteDialog('deletecomponent')
     _addServiceDialog = addDialog('addService')
     #_deleteserviceDialog = deleteDialog('deleteservice')
@@ -808,9 +809,9 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         self.send_response(200)
       
       #Update tab          
-      def updatetab():
-        debug(3,"function: AlpsHttpRequestHandler.do_POST.updateTab()")
-        pass
+      def edittab():
+        debug(3,"function: AlpsHttpRequestHandler.do_POST.edittab()")
+        
       
       #Add a new component in database and return what was really added through json
       def addcomponent():
@@ -828,7 +829,7 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
             name="Component %i" % ( idsys + 1 )
           else:
             name="Component 1"
-        query=databasemanager.execute("INSERT INTO component (idtab, name, comment) VALUES (?,?,?)", idtab, name, form['comment'].value )
+        query=databasemanager.execute("INSERT INTO component (idtab, name, comment, ord) VALUES (?,?,?,?)", idtab, name, form['comment'].value, 99999 )
         query=databasemanager.execute("SELECT * FROM component WHERE rowid=?" , query.lastrowid)
         idsys, name, idtab, comment, order = query.fetchone()
         databasemanager.commit()
@@ -851,8 +852,8 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         databasemanager.commit()
       
       #Update component          
-      def updatecomponent():
-        debug(3,"function: AlpsHttpRequestHandler.do_POST.updatecomponent()")
+      def editcomponent():
+        debug(3,"function: AlpsHttpRequestHandler.do_POST.editcomponent()")
         self.send_response(200)
       
       #Update component          
@@ -873,12 +874,12 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
       #Define commands available
       actions = {
         "/addtab":          addtab,
+        "/edittab":         edittab,
         "/deletetab":       deletetab,
-        "/updatetab":       updatetab,
-        "/addcomponent" :   addcomponent,
-        "/deletecomponent": deletecomponent,
-        "/updatecomponent": updatecomponent,
-        "/movecomponent":   movecomponent
+        "/addcomponent":    addcomponent,
+        "/editcomponent":   editcomponent,
+        "/movecomponent":   movecomponent,
+        "/deletecomponent": deletecomponent
       }
       
       actions.get(self.path,errHandler)()
