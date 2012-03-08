@@ -389,7 +389,10 @@ class MainPage():
             addPlus();
             tab_counter++;
             
-          });
+          })
+          .error(
+            function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
+          );
         }
         """+_addtabDialog+"""
         
@@ -397,7 +400,10 @@ class MainPage():
           var selected = $tabs.tabs('option', 'selected');
           $.post("deletetab" , { tabid: selected }, function(data) { 
                   $tabs.tabs( "remove", selected ); 
-                });
+                })
+            .error(
+                function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
+            );
         }
         """+_deletetabDialog+"""
         
@@ -411,7 +417,10 @@ class MainPage():
                     { order: $(this).sortable("serialize") }, 
                     function(data) { 
                       return
-                    }, "json");
+                    }, "json")
+            .error(
+              function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
+            );
           }
         });
         $( ".componentlist" ).disableSelection();
@@ -433,13 +442,16 @@ class MainPage():
           $.post( "addcomponent" , 
                   { tabid: selected,
                     name: $("input#component_name").val() || "Component",   
-                    comment: $("input#component_comment").val() || "Comment" }, 
+                    comment: $("textarea#component_comment").val() || "Comment" }, 
                   function(data) { 
                     $("#componentlist-"+data.idtab)
                       .append(" """+self.addcomponent('"+data.idsys+"',
                                                       '"+data.name+"',
                                                       '"+data.comment+"').replace("\n","")+""" ");
-                  }, "json");
+                  }, "json")
+            .error(
+              function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
+            );
         }
           
         // addcomponent dialog
@@ -456,7 +468,10 @@ class MainPage():
         function deletecomponent() {
           $.post("deletecomponent" , { idsys: senderId }, function(data) { 
             $( "#componentPanel-" + senderId).remove();
-                });
+                })
+            .error(
+              function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
+          );
         }
         
         // deletcomponent dialog
@@ -754,7 +769,7 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         
     except IOError:
       #In case of error
-      self.send_error(500,'Internal error')
+      self.send_error(500,'Internal error: %s' % self.path)
     databasemanager.close()
 
   def do_POST(self):
@@ -853,7 +868,7 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
       
       #In case of error
       def errHandler ():
-        self.send_error(500,'Internal error')
+        self.send_error(500,'Internal error: %s' % self.path)
       
       #Define commands available
       actions = {
