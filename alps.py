@@ -538,6 +538,7 @@ class MainPage():
         // editcomponent button
         $( ".editcomponent" ).live( "click", function() {
           senderId = $(this).attr('id').substr(14,100);
+          $("#editcomponent_name").val($("#componenttitle-"+senderId+" b").text())
           //TODO: Update the content of the dialog with the info from the DB
           // --> It is required to do a post to get those info
           
@@ -547,9 +548,9 @@ class MainPage():
         
         // editcomponent function
         function editcomponent() {
-          $.post("editcomponent" , { idsys: senderId }, function(data) { 
-              alert("editcomponent " + senderId);
-                })
+          $.post("editcomponent" , { idsys: senderId, newname: $("#editcomponent_name").val() }, function(data) { 
+              $("#componenttitle-"+senderId+" b").text(data.newname)
+                }, "json")
             .error(
               function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
           );
@@ -615,7 +616,7 @@ class MainPage():
       
     _component = """
             <li class='ui-state-default' id='componentPanel-"""+str(idsys)+"""'>
-              <div class='componenttitle'><b>"""+str(name)+"""</b></div>
+              <div class='componenttitle' id='componenttitle-"""+str(idsys)+"""'><b>"""+str(name)+"""</b></div>
               <div class='ui-state-default ui-corner-all addshortcut' id='addshortcut-"""+str(idsys)+"""'>
                 <span class='ui-icon ui-icon-plus'></span>
               </div>
@@ -744,8 +745,8 @@ class MainPage():
   <div id="editcomponent" title="Edit component">
     <form>
       <fieldset class="ui-helper-reset">
-      <label for="component_name">Component name</label>
-      <input type="text" name="component_name" id="component_name" value="" class="ui-widget-content ui-corner-all" /><br>
+      <label for="editcomponent_name">Component name</label>
+      <input type="text" name="editcomponent_name" id="editcomponent_name" value="" class="ui-widget-content ui-corner-all" /><br>
       <label for="component_comment">Shortcut list</label><br>
       </fieldset>
     </form>
@@ -923,7 +924,6 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
       #Edit tab          
       def edittab():
         debug(3,"function: AlpsHttpRequestHandler.do_POST.edittab()")
-        ### TODO UPDATE DB
         query=databasemanager.execute("UPDATE tab SET name=? WHERE idsys=?",form['newtitle'].value,form['idsys'].value)
         databasemanager.commit()
         self.send_response(200)
@@ -972,7 +972,12 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
       #Edit component          
       def editcomponent():
         debug(3,"function: AlpsHttpRequestHandler.do_POST.editcomponent()")
+        query=databasemanager.execute("UPDATE component SET name=? WHERE idsys=?",form['newname'].value,form['idsys'].value)
+        databasemanager.commit()
         self.send_response(200)
+        self.send_header('Content-type',  'application/json')
+        self.end_headers()
+        self.wfile.write( json.dumps({  "newname": form['newname'].value }) )     
       
       #Move component          
       def movecomponent():
