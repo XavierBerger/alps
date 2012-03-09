@@ -445,10 +445,8 @@ class MainPage():
         // edittab button
         $( ".edittab" ).live( "click", function() {
           senderId = $(this).attr('id').substr(8,100);
-          //TODO: Update the content of the dialog with the info from the DB
-          // --> It is required to do a post to get those info
-          
-          //Finally open the dialog
+          var selected = $tabs.tabs('option', 'selected');
+          $edittab_title_input.val($( "#tabs-ul>li").eq(selected).text());
           $edittab.dialog( "open" );
         });
         
