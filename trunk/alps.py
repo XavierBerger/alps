@@ -452,9 +452,10 @@ class MainPage():
         
         // edittab function
         function edittab() {
-          $.post("edittab" , { idsys: senderId }, function(data) { 
-              alert("edittab " + senderId);
-                })
+          $.post("edittab" , { idsys: senderId, newtitle: $edittab_title_input.val() }, function(data) { 
+              var selected = $tabs.tabs('option', 'selected');
+              $( "#tabs-ul>li:eq("+selected+") a").text( data.newtitle);
+            }, "json")
             .error(
               function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
           );
@@ -922,7 +923,13 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
       #Edit tab          
       def edittab():
         debug(3,"function: AlpsHttpRequestHandler.do_POST.edittab()")
-        self.send_response(200)        
+        ### TODO UPDATE DB
+        query=databasemanager.execute("UPDATE tab SET name=? WHERE idsys=?",form['newtitle'].value,form['idsys'].value)
+        databasemanager.commit()
+        self.send_response(200)
+        self.send_header('Content-type',  'application/json')
+        self.end_headers()
+        self.wfile.write( json.dumps({  "newtitle": form['newtitle'].value }) )         
       
       #Add a new component in database and return what was really added through json
       def addcomponent():
