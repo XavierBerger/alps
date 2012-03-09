@@ -165,7 +165,7 @@ class MainPage():
               background-color:#FFFFFF;
               cursor: pointer;
             }
-            #tabs div .edittabname {
+            #tabs div .edittab {
               z-index:99;
               position: absolute;
               top: 37px;
@@ -281,7 +281,7 @@ class MainPage():
                 }
               },
               open: function() {
-                $tab_title_input.focus();
+                $"""+dialogName+"""_title_input.focus();
               },
               close: function() {
                 $( "form", $"""+dialogName+""" )[0].reset();
@@ -313,7 +313,7 @@ class MainPage():
                 }
               },
               open: function() {
-                $tab_title_input.focus();
+                $"""+dialogName+"""_title_input.focus();
               },
               close: function() {
                 $( "form", $"""+dialogName+""" )[0].reset();
@@ -369,6 +369,7 @@ class MainPage():
     #Prepare content
     _tabContent = self.addtab("\"+tab_counter+\"").replace('\n','')
     _addtabDialog = addDialog('addtab')
+    _edittabDialog = editDialog('edittab')
     _deletetabDialog = deleteDialog('deletetab')
     _addcomponentDialog = addDialog('addcomponent')
     _editcomponentDialog = editDialog('editcomponent')
@@ -389,7 +390,8 @@ class MainPage():
         // add addtab dialog management        
  
         //
-        var $tab_title_input = $( "#tab_title");
+        var $addtab_title_input  = $( "#addtab_title");
+        var $edittab_title_input = $( "#edittab_title");
 
         //Add tab and the default button
         var $tabs = $( "#tabs").tabs({
@@ -414,10 +416,10 @@ class MainPage():
         // related to the data added in the row - the id of element are
         // indexed on the idsys
         function addtab() {
-          var tab_title = $tab_title_input.val() || "Tab " + tab_counter;
-          $.post("addtab" , { title: tab_title }, function(data) { 
+          var addtab_title = $addtab_title_input.val() || "Tab " + tab_counter;
+          $.post("addtab" , { title: addtab_title }, function(data) { 
             $( '#add_tab_li' ).remove();
-            $tabs.tabs( "add", "#tabs-" + tab_counter, tab_title );
+            $tabs.tabs( "add", "#tabs-" + tab_counter, addtab_title );
             $tabs.tabs("select", "#tabs-" + tab_counter);
             addPlus();
             tab_counter++;
@@ -439,6 +441,29 @@ class MainPage():
             );
         }
         """+_deletetabDialog+"""
+        
+        // edittab button
+        $( ".edittab" ).live( "click", function() {
+          senderId = $(this).attr('id').substr(8,100);
+          //TODO: Update the content of the dialog with the info from the DB
+          // --> It is required to do a post to get those info
+          
+          //Finally open the dialog
+          $edittab.dialog( "open" );
+        });
+        
+        // edittab function
+        function edittab() {
+          $.post("edittab" , { idsys: senderId }, function(data) { 
+              alert("edittab " + senderId);
+                })
+            .error(
+              function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
+          );
+        }
+        
+        // edittab dialog
+        """+_edittabDialog+"""
         
         // ---------------------------------------------------------
         // COMPONENT
@@ -497,7 +522,7 @@ class MainPage():
           $deletecomponent.dialog( "open" );
         });
         
-        // deletcomponent function
+        // deletecomponent function
         function deletecomponent() {
           $.post("deletecomponent" , { idsys: senderId }, function(data) { 
             $( "#componentPanel-" + senderId).remove();
@@ -535,7 +560,7 @@ class MainPage():
         """+_editcomponentDialog+"""
         
         // ---------------------------------------------------------
-        // shortcutS
+        // SHORTCUTS
         // ---------------------------------------------------------        
         // add addshortcut dialog management
         """+_addshortcutDialog+"""
@@ -625,7 +650,7 @@ class MainPage():
                 <div class='ui-state-default ui-corner-all addcomponent'>
                   <span class='ui-icon ui-icon-plus'></span>
                 </div>
-                <div class='ui-state-default ui-corner-all edittabname'>
+                <div class='ui-state-default ui-corner-all edittab' id='edittab-"""+tabId+"""'>
                   <span class='ui-icon ui-icon-pencil'></span>
                 </div>
                 <div class='ui-state-default ui-corner-all deletetab'>
@@ -684,15 +709,38 @@ class MainPage():
   """+self.htmlDeleteDialog("deletecomponent", "component")+"""
 
   <!-- Dialog addtab -->
-  <div id="addtab" title="New tab name">
+  <div id="addtab" title="New tab">
     <form>
       <fieldset class="ui-helper-reset">
-      <label for="tab_title">Title</label>
-      <input type="text" name="tab_title" id="tab_title" value="" class="ui-widget-content ui-corner-all" />
+      <label for="addtab_title">Tab Name</label>
+      <input type="text" name="addtab_title" id="addtab_title" value="" class="ui-widget-content ui-corner-all" />
+      </fieldset>
+    </form>
+  </div>
+  
+  <!-- Dialog edittab -->
+  <div id="edittab" title="Edit tab">
+    <form>
+      <fieldset class="ui-helper-reset">
+      <label for="edittab_title">Tab Name</label>
+      <input type="text" name="edittab_title" id="edittab_title" value="" class="ui-widget-content ui-corner-all" />
       </fieldset>
     </form>
   </div>
 
+  <!-- Dialog addcomponent -->
+  <div id="addcomponent" title="Add component">
+    <form>
+      <fieldset class="ui-helper-reset">
+      <label for="component_name">Component name</label>
+      <input type="text" name="component_name" id="component_name" value="" class="ui-widget-content ui-corner-all" /><br>
+      <label for="component_comment">Comments</label><br>
+      <textarea name="component_comment" id="component_comment">test</textarea>
+      <!--textarea name="component_comment" id="component_comment" value="" class="ui-widget-content ui-corner-all"></textarea-->
+      </fieldset>
+    </form>
+  </div>
+  
   <!-- Dialog editcomponent -->
   <div id="editcomponent" title="Edit component">
     <form>
@@ -704,15 +752,14 @@ class MainPage():
     </form>
   </div>
   
-  <!-- Dialog addcomponent -->
-  <div id="addcomponent" title="Add component">
+  <!-- Dialog addshortcut -->
+  <div id="addshortcut" title="Add shortcut">
     <form>
       <fieldset class="ui-helper-reset">
-      <label for="component_name">Component name</label>
-      <input type="text" name="component_name" id="component_name" value="" class="ui-widget-content ui-corner-all" /><br>
-      <label for="component_comment">Comments</label><br>
-      <textarea name="component_comment" id="component_comment">test</textarea>
-      <!--textarea name="component_comment" id="component_comment" value="" class="ui-widget-content ui-corner-all"></textarea-->
+      <label for="shortcut_name">Shortcut name</label>
+      <input type="text" name="shortcut_name" id="shortcut_name" value="" class="ui-widget-content ui-corner-all" /><br>
+      <label for="shortcut_comment">Comments</label><br>
+      <textarea name="component_comment" id="shortcut_comment">test</textarea>
       </fieldset>
     </form>
   </div>
@@ -877,7 +924,7 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
       #Edit tab          
       def edittab():
         debug(3,"function: AlpsHttpRequestHandler.do_POST.edittab()")
-        
+        self.send_response(200)        
       
       #Add a new component in database and return what was really added through json
       def addcomponent():
