@@ -13,7 +13,7 @@ databaseCreation = """
 BEGIN TRANSACTION;
   CREATE TABLE tab (idsys INTEGER PRIMARY KEY, name TEXT);
   CREATE TABLE component (idsys INTEGER PRIMARY KEY, name TEXT, idtab NUMERIC, comment TEXT, ord NUMERIC);
-  CREATE TABLE service (idsys INTEGER PRIMARY KEY, name TEXT, idcomponent NUMERIC, command TEXT);
+  CREATE TABLE shortcut (idsys INTEGER PRIMARY KEY, name TEXT, idcomponent NUMERIC, command TEXT);
   CREATE TABLE configuration (idsys INTEGER PRIMARY KEY, name TEXT, width NUMERIC, height NUMERIC, background TEXT);
   INSERT INTO configuration VALUES (1, 'default', 310, 150, '/css/background.jpg');
 COMMIT;"""
@@ -188,7 +188,7 @@ class MainPage():
               left: 2px;
               vertical-align:top;
             }
-            div .addservice {
+            div .addshortcut {
               z-index:99;
               position: relative;
               top: -14px;
@@ -198,7 +198,7 @@ class MainPage():
               cursor: pointer;
               
             }
-            div.componenteditname {
+            div.editcomponent {
               z-index:99;
               position: relative;
               top: -32px;
@@ -262,6 +262,38 @@ class MainPage():
   def js(self):
     debug(3,"function: MainPage.js()")
     
+    # ------------------------------------------------------------------
+    # Javascript edit dialog
+    # ------------------------------------------------------------------
+    def editDialog(dialogName):
+      debug(3,"function: MainPage.js.editDialog('%s')" % dialogName)
+      return """  
+        var $"""+dialogName+""" = $( \"#"""+dialogName+"""\" ).dialog({
+            autoOpen: false,
+            modal: true,
+            buttons: {
+                Update: function() {
+                  """+dialogName+"""();
+                  $( this ).dialog( "close" );
+                },
+                Cancel: function() {
+                  $( this ).dialog( "close" );
+                }
+              },
+              open: function() {
+                $tab_title_input.focus();
+              },
+              close: function() {
+                $( "form", $"""+dialogName+""" )[0].reset();
+              }
+            });
+            
+            $( "form", $"""+dialogName+""" ).submit(function() {
+              """+dialogName+"""();
+              $"""+dialogName+""".dialog( \"close\" );
+              return false;
+            });
+      """
     # ------------------------------------------------------------------
     # Javascript add dialog
     # ------------------------------------------------------------------
@@ -339,10 +371,10 @@ class MainPage():
     _addtabDialog = addDialog('addtab')
     _deletetabDialog = deleteDialog('deletetab')
     _addcomponentDialog = addDialog('addcomponent')
-    #_editcomponentDialog = addDialog('editcomponent')
+    _editcomponentDialog = editDialog('editcomponent')
     _deletecomponentDialog = deleteDialog('deletecomponent')
-    _addServiceDialog = addDialog('addService')
-    #_deleteserviceDialog = deleteDialog('deleteservice')
+    _addshortcutDialog = addDialog('addshortcut')
+    #_deleteshortcutDialog = deleteDialog('deleteshortcut')
     
     _js  = """
       $(function() {
@@ -475,26 +507,49 @@ class MainPage():
           );
         }
         
-        // deletcomponent dialog
+        // deletecomponent dialog
         """+_deletecomponentDialog+"""
 
         
-        // ---------------------------------------------------------
-        // SERVICES
-        // ---------------------------------------------------------        
-        // add addService dialog management
-        """+_addServiceDialog+"""
+        // editcomponent button
+        $( ".editcomponent" ).live( "click", function() {
+          senderId = $(this).attr('id').substr(14,100);
+          //TODO: Update the content of the dialog with the info from the DB
+          // --> It is required to do a post to get those info
+          
+          //Finally open the dialog
+          $editcomponent.dialog( "open" );
+        });
         
-        // Add addService button
-        $( ".addService" )
+        // editcomponent function
+        function editcomponent() {
+          $.post("editcomponent" , { idsys: senderId }, function(data) { 
+              alert("editcomponent " + senderId);
+                })
+            .error(
+              function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
+          );
+        }
+        
+        // editcomponent dialog
+        """+_editcomponentDialog+"""
+        
+        // ---------------------------------------------------------
+        // shortcutS
+        // ---------------------------------------------------------        
+        // add addshortcut dialog management
+        """+_addshortcutDialog+"""
+        
+        // Add addshortcut button
+        $( ".addshortcut" )
           .click(function() {
-            $addService.dialog( "open" );
+            $addshortcut.dialog( "open" );
         });
          
           
         // Add new tab by sending a post to server
-        function addService() {
-          alert('Adding service for component '+ component);
+        function addshortcut() {
+          alert('Adding shortcut for component '+ component);
         }
 
 
@@ -537,10 +592,10 @@ class MainPage():
     _component = """
             <li class='ui-state-default' id='componentPanel-"""+str(idsys)+"""'>
               <div class='componenttitle'><b>"""+str(name)+"""</b></div>
-              <div class='ui-state-default ui-corner-all addservice' id='addservice-"""+str(idsys)+"""'>
+              <div class='ui-state-default ui-corner-all addshortcut' id='addshortcut-"""+str(idsys)+"""'>
                 <span class='ui-icon ui-icon-plus'></span>
               </div>
-              <div class='ui-state-default ui-corner-all componenteditname' id='componenteditname-"""+str(idsys)+"""'>
+              <div class='ui-state-default ui-corner-all editcomponent' id='editcomponent-"""+str(idsys)+"""'>
                 <span class='ui-icon ui-icon-pencil'></span>
               </div>
               <div class='ui-state-default ui-corner-all deletecomponent' id='deletecomponent-"""+str(idsys)+"""'>
@@ -638,6 +693,17 @@ class MainPage():
     </form>
   </div>
 
+  <!-- Dialog editcomponent -->
+  <div id="editcomponent" title="Edit component">
+    <form>
+      <fieldset class="ui-helper-reset">
+      <label for="component_name">Component name</label>
+      <input type="text" name="component_name" id="component_name" value="" class="ui-widget-content ui-corner-all" /><br>
+      <label for="component_comment">Shortcut list</label><br>
+      </fieldset>
+    </form>
+  </div>
+  
   <!-- Dialog addcomponent -->
   <div id="addcomponent" title="Add component">
     <form>
@@ -808,7 +874,7 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         databasemanager.commit()
         self.send_response(200)
       
-      #Update tab          
+      #Edit tab          
       def edittab():
         debug(3,"function: AlpsHttpRequestHandler.do_POST.edittab()")
         
@@ -848,15 +914,15 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type',  'application/json')
         self.end_headers()
         query=databasemanager.execute("DELETE FROM component WHERE idsys=?", form['idsys'].value )
-        #TODO: Delete services
+        #TODO: Delete shortcuts
         databasemanager.commit()
       
-      #Update component          
+      #Edit component          
       def editcomponent():
         debug(3,"function: AlpsHttpRequestHandler.do_POST.editcomponent()")
         self.send_response(200)
       
-      #Update component          
+      #Move component          
       def movecomponent():
         debug(3,"function: AlpsHttpRequestHandler.do_POST.movecomponent()")
         self.send_response(200)
