@@ -186,6 +186,7 @@ class MainPage():
               position: relative;
               top: 2px;
               left: 2px;
+              height: 16px;
               vertical-align:top;
             }
             div .addshortcut {
@@ -198,7 +199,7 @@ class MainPage():
               cursor: pointer;
               
             }
-            div.editcomponent {
+            div .editcomponent {
               z-index:99;
               position: relative;
               top: -32px;
@@ -207,7 +208,7 @@ class MainPage():
               background-color:#FFFFFF;
               cursor: pointer;
             }
-            div.deletecomponent {
+            div .deletecomponent {
               z-index:99;
               position: relative;
               top: -50px;
@@ -245,7 +246,7 @@ class MainPage():
               padding: 0; 
             }
 
-            .componentlist li { 
+            .componentlistli { 
               margin: 4px 4px 0px 0; 
               padding: 1px; 
               float: left; 
@@ -607,15 +608,26 @@ class MainPage():
       });
     """
     return _js
+  
+  # ====================================================================
+  # HTML add shortcut (use to generate html and javascript)
+  # ====================================================================
+  def addshortcut(self, idsys, name, link):
+    debug(3,"function: MainPage.addcomponent(%s,'%s','%s')" % ( idsys, name, link ) )
+    _shortcut = "<li class='toto'><a href='%s'>%s</a></li>" % ( link, name )
+    return _shortcut
+    
     
   # ====================================================================
   # HTML add component (use to generate html and javascript)
   # ====================================================================
   def addcomponent(self, idsys, name, comment):
     debug(3,"function: MainPage.addcomponent(%s,'%s','%s')" % ( idsys, name, comment ) )
+    
+    query=databasemanager.execute("SELECT * FROM shortcut WHERE idcomponent=?" , idsys )
       
-    _component = """
-            <li class='ui-state-default' id='componentPanel-"""+str(idsys)+"""'>
+    _component  = """
+            <li class='ui-state-default componentlistli' id='componentPanel-"""+str(idsys)+"""'>
               <div class='componenttitle' id='componenttitle-"""+str(idsys)+"""'><b>"""+str(name)+"""</b></div>
               <div class='ui-state-default ui-corner-all addshortcut' id='addshortcut-"""+str(idsys)+"""'>
                 <span class='ui-icon ui-icon-plus'></span>
@@ -626,7 +638,13 @@ class MainPage():
               <div class='ui-state-default ui-corner-all deletecomponent' id='deletecomponent-"""+str(idsys)+"""'>
                 <span class='ui-icon ui-icon-close'></span>
               </div>
-              <br><div class='tabpanel'>"""+str(comment)+"""</div>
+              <br>
+              <ul class='sortable' style='position: relative; top: -60px;'>"""
+    for row in query.fetchall():    
+      _component += self.addshortcut(row[C_IDSYS],row[C_NAME],row[C_COMMAND])
+      #_component += self.addshortcut("a","b","c")
+    _component += """
+              </ul>          
             </li>
     """
     return _component
@@ -758,8 +776,8 @@ class MainPage():
       <fieldset class="ui-helper-reset">
       <label for="shortcut_name">Shortcut name</label>
       <input type="text" name="shortcut_name" id="shortcut_name" value="" class="ui-widget-content ui-corner-all" /><br>
-      <label for="shortcut_comment">Comments</label><br>
-      <textarea name="component_comment" id="shortcut_comment">test</textarea>
+      <label for="shortcut_command">Command</label>
+      <input type="text" name="shortcut_command" id="shortcut_command" value="" class="ui-widget-content ui-corner-all" /><br>
       </fieldset>
     </form>
   </div>
@@ -966,7 +984,6 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type',  'application/json')
         self.end_headers()
         query=databasemanager.execute("DELETE FROM component WHERE idsys=?", form['idsys'].value )
-        #TODO: Delete shortcuts
         databasemanager.commit()
       
       #Edit component          
