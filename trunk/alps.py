@@ -3,6 +3,7 @@ import os, sys, socket, time, cgi, json
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from optparse import OptionParser
 import sqlite3
+import ssl
 
 # **********************************************************************
 # Parameters
@@ -639,6 +640,9 @@ class MainPage():
                 <span class='ui-icon ui-icon-close'></span>
               </div>
               <br>
+              <div>
+                COMMENTS
+              </div>
               <ul class='sortable' style='position: relative; top: -60px;'>"""
     for row in query.fetchall():    
       _component += self.addshortcut(row[C_IDSYS],row[C_NAME],row[C_COMMAND])
@@ -1027,6 +1031,29 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
     except IOError:
      pass
     databasemanager.close()
+  
+# **********************************************************************
+# CLASS AlpsServer
+# **********************************************************************
+class AlpsServer(HTTPServer):  
+  def handle_error(self, request, client_address):
+    """Handle an error gracefully. May be overridden.
+
+    The default is to print a traceback and continue.
+
+    """
+    #import traceback
+    if ( type(request) == ssl.SSLSocket):
+       debug(0,"SSL certification warning")
+    else:
+      print '-'*40
+      print 'Exception happened during processing of request from',
+      print client_address
+      print request.error
+      import traceback
+      traceback.print_exc() # XXX But this goes to stderr!
+      print '-'*40
+
       
 # **********************************************************************
 # MAIN
@@ -1055,6 +1082,8 @@ Debug level:
                       help="database to store shortcuts (default=%default)")
     parser.add_option("-l","--logging", default=logging, dest="logging", 
                       help="logging output (default=%default)")
+    parser.add_option("-s","--ssl", default="", dest="ssl", 
+                      help="ssl certificate to use (default=%default)")
     parser.add_option("-v", action="count", default=verbose, dest="verbose", 
                       help="debug level (default=%default)")
     
@@ -1070,9 +1099,16 @@ Debug level:
 
     #Start the web server
     stopped = False
-    server = HTTPServer((options.address, options.port), AlpsHttpRequestHandler)
+    server = AlpsServer((options.address, options.port), AlpsHttpRequestHandler)
+    #Use ssl
+    if ( options.ssl ):
+      server.socket = ssl.wrap_socket (server.socket, certfile=options.ssl, server_side=True)
+      ssl.verify_request=ssl.CERT_NONE
+        
     while not stopped:
       server.handle_request()
+
+
   except KeyboardInterrupt:
     os.system("touch stop")
   databasemanager.close()
