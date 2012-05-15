@@ -12,16 +12,16 @@ import ssl
 #Database
 databaseCreation = """
 BEGIN TRANSACTION;
-  CREATE TABLE tab (idsys INTEGER PRIMARY KEY, name TEXT);
-  CREATE TABLE component (idsys INTEGER PRIMARY KEY, name TEXT, idtab NUMERIC, comment TEXT, ord NUMERIC);
-  CREATE TABLE shortcut (idsys INTEGER PRIMARY KEY, name TEXT, idcomponent NUMERIC, command TEXT);
-  CREATE TABLE configuration (idsys INTEGER PRIMARY KEY, name TEXT, width NUMERIC, height NUMERIC, background TEXT);
+  CREATE TABLE tab           (idsys INTEGER PRIMARY KEY, name TEXT, ord NUMERIC                                          );
+  CREATE TABLE component     (idsys INTEGER PRIMARY KEY, name TEXT, ord NUMERIC,         idtab NUMERIC,  comment TEXT    );
+  CREATE TABLE shortcut      (idsys INTEGER PRIMARY KEY, name TEXT, idcomponent NUMERIC, command TEXT                    );
+  CREATE TABLE configuration (idsys INTEGER PRIMARY KEY, name TEXT, width NUMERIC,       height NUMERIC, background TEXT );
   INSERT INTO configuration VALUES (1, 'default', 310, 150, '/css/background.jpg');
 COMMIT;"""
-C_IDSYS,C_NAME,C_IDTAB,C_COMMENT,C_ORDER,C_IDCOMPONENT,C_COMMAND,C_WIDTH,C_HEIGHT,C_BACKGROUND = (0,1,2,3,4,2,3,2,3,4)
+C_IDSYS,C_NAME,C_ORDER,C_IDTAB,C_COMMENT,C_IDCOMPONENT,C_COMMAND,C_WIDTH,C_HEIGHT,C_BACKGROUND = (0,1,2,3,4,2,3,2,3,4)
 
-root=os.path.realpath(os.path.dirname(__file__)) + os.sep
-database = root + 'alps.sqlite'
+basedir=os.path.realpath(os.path.dirname(__file__)) + os.sep
+database = basedir + 'alps.sqlite'
 verbose=0
 logging="stderr" 
 address="127.0.0.1"
@@ -381,6 +381,7 @@ class MainPage():
     
     _js  = """
       $(function() {
+        
         $( ".dialog-confirm" ).hide();
         
         var tab_counter = """+id+""";
@@ -389,6 +390,20 @@ class MainPage():
         // ------------------------------------------------------------------
         // TAB
         // ------------------------------------------------------------------
+        // Sortable tab
+        $( "#tabs" ).tabs().find( ".ui-tabs-nav" ).sortable({
+          stop: function(event,ui) {
+            $.post( "movetab" , 
+                    { order: $(this).sortable("serialize") }, 
+                    function(data) { 
+                      return
+                    }, "json")
+            .error(
+              function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
+            );
+          }
+        });        
+        
         // add addtab dialog management        
  
         //
@@ -662,7 +677,6 @@ class MainPage():
       
     _componentPanel=""
 
-
     query=databasemanager.execute("SELECT * FROM component WHERE idtab=? ORDER BY ord" , tabId )
 
     for row in query.fetchall():
@@ -825,12 +839,12 @@ class MainPage():
     <div id="tabs" >
       <ul id="tabs-ul">
  """  
-    query = databasemanager.execute("SELECT * FROM tab")
+    query = databasemanager.execute("SELECT * FROM tab ORDER BY ord" )
     _contents = ""
     for tab in query.fetchall():
-      _page += "      <li><a href=\"#tabs-%i\">%s</a></li>\n" % tab
+      _page += "      <li><a href=\"#tabs-%i\">%s</a></li>\n" % ( tab [0], tab[1] )
       _contents +=  self.addtab(str(tab[0]))
-      
+    
     _page += "    </ul>\n"
     _page += _contents
     _page += """
@@ -885,7 +899,7 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         if ( ( self.path in scripts ) or 
              ( self.path in csss ) or
              ( self.path in images ) ):
-          fileToSend = open(root + self.path)
+          fileToSend = open(basedir + self.path)
           self.wfile.write(fileToSend.read())
           fileToSend.close()
         return ""
@@ -926,7 +940,7 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         query=databasemanager.execute("INSERT INTO tab (name) VALUES ( ? )" , form['title'].value )
         databasemanager.commit()
         query=databasemanager.execute("SELECT * FROM tab WHERE rowid=?" , query.lastrowid )
-        idsys, name = query.fetchone()
+        idsys, name, order = query.fetchone()
         self.send_response(200)
         self.send_header('Content-type',  'application/json')
         self.end_headers()
@@ -951,7 +965,22 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type',  'application/json')
         self.end_headers()
-        self.wfile.write( json.dumps({  "newtitle": form['newtitle'].value }) )         
+        self.wfile.write( json.dumps({  "newtitle": form['newtitle'].value }) )     
+        
+      #Move tab          
+      def movetab():
+        debug(3,"function: AlpsHttpRequestHandler.do_POST.movetab()")
+        self.send_response(200)
+        sorted=form['order'].value.replace("componentPanel[]=","").split("&")
+        
+        #TODO store order in database
+        
+        print sorted
+        #order = 1
+        #for idsys in sorted:
+        #  databasemanager.execute("UPDATE component SET ord=? WHERE idsys=?", order, idsys )
+        #  order = order + 1
+        #databasemanager.commit()
       
       #Add a new component in database and return what was really added through json
       def addcomponent():
@@ -971,7 +1000,7 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
             name="Component 1"
         query=databasemanager.execute("INSERT INTO component (idtab, name, comment, ord) VALUES (?,?,?,?)", idtab, name, form['comment'].value, 99999 )
         query=databasemanager.execute("SELECT * FROM component WHERE rowid=?" , query.lastrowid)
-        idsys, name, idtab, comment, order = query.fetchone()
+        idsys, name, order, idtab, comment = query.fetchone()
         databasemanager.commit()
         debug(2, "RESULT = idsys: %i, name: %s, idtab: %i, comment: %s, order: %s" % (idsys,name,idtab,comment,order) )
         self.wfile.write( json.dumps({  "idsys": idsys, 
@@ -1020,6 +1049,7 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         "/addtab":          addtab,
         "/edittab":         edittab,
         "/deletetab":       deletetab,
+        "/movetab":         movetab,
         "/addcomponent":    addcomponent,
         "/editcomponent":   editcomponent,
         "/movecomponent":   movecomponent,
