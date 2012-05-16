@@ -31,6 +31,7 @@ stopped = False
 
 #Exhaustive list of file that are served by the server
 scripts = ["/js/jquery-1.7.1.min.js",
+           "/js/jquery.cookie.js",
            "/js/jquery-ui-1.8.17.custom.min.js"]
 csss    = ["/css/smoothness/jquery-ui-1.8.17.custom.css"]
 images  = ["/css/background.jpg",
@@ -389,9 +390,34 @@ class MainPage():
 
         // ------------------------------------------------------------------
         // TAB
-        // ------------------------------------------------------------------
+        // ------------------------------------------------------------------       
+        // add addtab dialog management        
+ 
+        //
+        var $addtab_title_input  = $( "#addtab_title");
+        var $edittab_title_input = $( "#edittab_title");
+
+        //Add tab and the default button
+        var $tabs = $( "#tabs" ).tabs({
+          tabTemplate: "<li><a href='#{href}'>#{label}</a>",
+          add: function( event, ui ) {  
+                 $( ui.panel ).append( " """+_tabContent+""" ");
+               },
+          cookie: {	expires: 365 }
+        });
+
+        // Add "+" at the end of tabs
+        function addPlus() {
+          $("#tabs-ul")
+            //.append('<li id="tabs-0"><a id="add_tab">+</a></li>')
+            .append('<li class="ui-add-tab"><a id="add_tab">+</a></li>')
+              .live( "click", function() { $addtab.dialog( "open" )
+                              });
+        }
+        addPlus();
+        
         // Sortable tab
-        $( "#tabs" ).tabs().find( ".ui-tabs-nav" ).sortable({
+        $tabs.find( ".ui-tabs-nav" ).sortable({
           stop: function(event,ui) {
             var csv = "";
             $("#tabs > ul > li > a").each(function(i){
@@ -408,31 +434,7 @@ class MainPage():
               function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
             );
           }
-        });        
-        
-        // add addtab dialog management        
- 
-        //
-        var $addtab_title_input  = $( "#addtab_title");
-        var $edittab_title_input = $( "#edittab_title");
-
-        //Add tab and the default button
-        var $tabs = $( "#tabs").tabs({
-          tabTemplate: "<li><a href='#{href}'>#{label}</a>",
-          add: function( event, ui ) {  
-                 $( ui.panel ).append( " """+_tabContent+""" ");
-               }
         });
-
-        // Add "+" at the end of tabs
-        function addPlus() {
-          $("#tabs-ul")
-            //.append('<li id="tabs-0"><a id="add_tab">+</a></li>')
-            .append('<li class="ui-add-tab"><a id="add_tab">+</a></li>')
-              .live( "click", function() { $addtab.dialog( "open" )
-                              });
-        }
-        addPlus();
 
         // Add new tab by sending a post to server
         // --- TODO ---
