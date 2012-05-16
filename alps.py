@@ -440,14 +440,13 @@ class MainPage():
         // related to the data added in the row - the id of element are
         // indexed on the idsys
         function addtab() {
-          var addtab_title = $addtab_title_input.val() || "Tab " + tab_counter;
+          var addtab_title = $addtab_title_input.val() || "tab_title";
           $.post("addtab" , { title: addtab_title }, function(data) { 
             $( ".ui-add-tab" ).remove();
-            $tabs.tabs( "add", "#tabs-" + tab_counter, addtab_title );
-            $tabs.tabs("select", "#tabs-" + tab_counter);
+            $tabs.tabs( "add", "#tabs-" + data.idsys, addtab_title );
+            $tabs.tabs("select", "#tabs-" + data.idsys);
             addPlus();
-            tab_counter++;
-            
+            tab_counter++; 
           })
           .error(
             function(data) { alert("Error code: " + data.status + "\\n" + data.statusText); }
@@ -456,7 +455,7 @@ class MainPage():
         """+_addtabDialog+"""
         
         function deletetab() {
-          var selected = $tabs.tabs('option', 'selected');
+          var selected = $('.ui-tabs-selected a').attr('href').split('-')[1];
           $.post("deletetab" , { tabid: selected }, function(data) { 
                   $tabs.tabs( "remove", selected ); 
                 })
@@ -944,7 +943,7 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
       #Add a new tab in database
       def addtab():
         debug(3,"function: AlpsHttpRequestHandler.do_POST.addTab()")
-        query=databasemanager.execute("INSERT INTO tab (name) VALUES ( ? )" , form['title'].value )
+        query=databasemanager.execute("INSERT INTO tab (name, ord) VALUES ( ?, ? )" , form['title'].value,9999 )
         databasemanager.commit()
         query=databasemanager.execute("SELECT * FROM tab WHERE rowid=?" , query.lastrowid )
         idsys, name, order = query.fetchone()
@@ -957,10 +956,10 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
       #Delete defined tab from the database          
       def deletetab():
         debug(3,"function: AlpsHttpRequestHandler.do_POST.deleteTab()")
-        query=databasemanager.execute("SELECT idsys FROM tab LIMIT 1 OFFSET ?", form['tabid'].value )
-        idtab=str(query.fetchone()[0])
-        query=databasemanager.execute("DELETE FROM tab WHERE idsys=?", idtab )
-        query=databasemanager.execute("DELETE FROM component WHERE idtab=?", idtab )
+        #query=databasemanager.execute("SELECT idsys FROM tab LIMIT 1 OFFSET ?", form['tabid'].value )
+        #idtab=str(query.fetchone()[0])
+        query=databasemanager.execute("DELETE FROM tab WHERE idsys=?", form['tabid'].value )
+        query=databasemanager.execute("DELETE FROM component WHERE idtab=?", form['tabid'].value )
         databasemanager.commit()
         self.send_response(200)
       
