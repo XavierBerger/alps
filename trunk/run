@@ -1,6 +1,6 @@
 #!/bin/bash
+clear;
 while [ ! -f stop  ]; do 
-  clear; 
   ./alps.py $@; 
 done; 
 rm -f stop

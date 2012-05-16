@@ -393,8 +393,14 @@ class MainPage():
         // Sortable tab
         $( "#tabs" ).tabs().find( ".ui-tabs-nav" ).sortable({
           stop: function(event,ui) {
-            $.post( "movetab" , 
-                    { order: $(this).sortable("serialize") }, 
+            var csv = "";
+            $("#tabs > ul > li > a").each(function(i){
+			  if (this.href != "") {	
+				csv+= ( csv == "" ? "" : "," ) + this.href.split("-")[1];
+			  }
+            });
+			$.post( "movetab" , 
+                    { order: csv }, 
                     function(data) { 
                       return
                     }, "json")
@@ -421,7 +427,8 @@ class MainPage():
         // Add "+" at the end of tabs
         function addPlus() {
           $("#tabs-ul")
-            .append('<li id="add_tab_li"><a id="add_tab">+</a></li>')
+            //.append('<li id="tabs-0"><a id="add_tab">+</a></li>')
+            .append('<li class="ui-add-tab"><a id="add_tab">+</a></li>')
               .live( "click", function() { $addtab.dialog( "open" )
                               });
         }
@@ -435,7 +442,7 @@ class MainPage():
         function addtab() {
           var addtab_title = $addtab_title_input.val() || "Tab " + tab_counter;
           $.post("addtab" , { title: addtab_title }, function(data) { 
-            $( '#add_tab_li' ).remove();
+            $( ".ui-add-tab" ).remove();
             $tabs.tabs( "add", "#tabs-" + tab_counter, addtab_title );
             $tabs.tabs("select", "#tabs-" + tab_counter);
             addPlus();
@@ -969,18 +976,14 @@ class AlpsHttpRequestHandler(BaseHTTPRequestHandler):
         
       #Move tab          
       def movetab():
-        debug(3,"function: AlpsHttpRequestHandler.do_POST.movetab()")
-        self.send_response(200)
-        sorted=form['order'].value.replace("componentPanel[]=","").split("&")
-        
-        #TODO store order in database
-        
-        print sorted
-        #order = 1
-        #for idsys in sorted:
-        #  databasemanager.execute("UPDATE component SET ord=? WHERE idsys=?", order, idsys )
-        #  order = order + 1
-        #databasemanager.commit()
+		debug(3,"function: AlpsHttpRequestHandler.do_POST.movetab()")
+		self.send_response(200)
+		sorted=form['order'].value.split(",")
+		order = 1
+		for idsys in sorted:
+		  databasemanager.execute("UPDATE tab SET ord=? WHERE idsys=?", order, idsys )
+		  order = order + 1
+		databasemanager.commit()
       
       #Add a new component in database and return what was really added through json
       def addcomponent():
