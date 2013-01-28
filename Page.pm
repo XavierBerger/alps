@@ -97,9 +97,9 @@ sub AddComponent
                 <span class='ui-icon ui-icon-close'></span>
               </div>
               <br>
-              <div>
+              <!--div>
                 COMMENTS
-              </div>
+              </div-->
               <ul class='sortable' id='componentPanelList-$idsys' style='position: relative; top: -60px;'>";
   my $query = "SELECT * FROM shortcut WHERE idcomponent=$idsys";
   my $response = $sqlite->ExecuteQuery($query);
