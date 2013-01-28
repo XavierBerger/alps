@@ -352,9 +352,14 @@ sub Print {
 
         // editcomponent function
         function editcomponent() {
-          $.post("EditComponent" , { idsys: senderId, newname: $("#editcomponent_name").val() }, function(data) {
-              $("#componenttitle-"+senderId+" b").text(data.newname)
-                }, "json")
+          $.post("EditComponent" ,
+                  { idsys: senderId,
+                    newname: $("#editcomponent_name").val()
+                  },
+                  function(data) {
+                    $("#componenttitle-"+senderId+" b").text(data.newname)
+                  },
+                  "json")
             .fail(
               function(data) { alert("Error code: " + data.status + "\\n"
                                                     + data.statusText + "\\n"
@@ -374,13 +379,28 @@ sub Print {
         // Add addshortcut button
         $( ".addshortcut" )
           .click(function() {
+            //alert ('=> ' + $(this).attr('id'));
+            componentIdsys = $(this).attr('id').substr(12,100);
             $addshortcut.dialog( "open" );
         });
 
 
         // Add new tab by sending a post to server
         function addshortcut() {
-          alert('Adding shortcut for component '+ component);
+            $.post("AddShortcut" ,
+                  { idsys:    componentIdsys,
+                    name:     $("#shortcut_name").val(),
+                    command : $("#shortcut_command").val()
+                  },
+                  function(data) {
+
+                  },
+                  "json")
+            .fail(
+              function(data) { alert("Error code: " + data.status + "\\n"
+                                                    + data.statusText + "\\n"
+                                                    + data.responseText); }
+          );
         }
 
 
