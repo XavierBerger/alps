@@ -377,8 +377,7 @@ sub Print {
         ]."$_addshortcutDialog".q[
 
         // Add addshortcut button
-        $( ".addshortcut" )
-          .click(function() {
+        $( ".addshortcut" ).live( "click", function() {
             //alert ('=> ' + $(this).attr('id'));
             componentIdsys = $(this).attr('id').substr(12,100);
             $addshortcut.dialog( "open" );

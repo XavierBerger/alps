@@ -9,17 +9,6 @@ use DBI qw(:sql_types);
 use DateTime::Format::SQLite;
 use POSIX;
 
-=cut
-databaseCreation = """
-BEGIN TRANSACTION;
-  CREATE TABLE tab           (idsys INTEGER PRIMARY KEY, name TEXT, ord NUMERIC                                          );
-  CREATE TABLE component     (idsys INTEGER PRIMARY KEY, name TEXT, ord NUMERIC,         idtab NUMERIC,  comment TEXT    );
-  CREATE TABLE shortcut      (idsys INTEGER PRIMARY KEY, name TEXT, idcomponent NUMERIC, command TEXT                    );
-  CREATE TABLE configuration (idsys INTEGER PRIMARY KEY, name TEXT, width NUMERIC,       height NUMERIC, background TEXT );
-  INSERT INTO configuration VALUES (1, 'default', 310, 150, '/css/background.jpg');
-COMMIT;"""
-=cut
-
 sub new
 {
   my $this = bless {}, shift;
@@ -37,6 +26,35 @@ sub new
   $this->{'dbh'} = DBI->connect($this->{'dsn'}, $user, $password, \%attr)
      or $this->Debug( 0, "Can't connect to database: $DBI::errstr" ) and die;
   $this->{'dbh'}->do("PRAGMA foreign_keys = ON");
+
+  #Check if database is existing
+  my $response = $this->ExecuteQuery("SELECT count(*) FROM sqlite_master");
+  if ($response->[0]->[0] == 0){
+    $this->Debug(1,"Creating database");
+    $this->ExecuteQuery ( "CREATE TABLE tab ( idsys INTEGER PRIMARY KEY,
+                                              name TEXT,
+                                              ord NUMERIC
+                                              );");
+    $this->ExecuteQuery ( "CREATE TABLE component ( idsys INTEGER PRIMARY KEY,
+                                                    name TEXT,
+                                                    ord NUMERIC,
+                                                    idtab NUMERIC,
+                                                    comment TEXT,
+                                                    FOREIGN KEY(idtab) REFERENCES tab(idsys) ON DELETE CASCADE
+                                                    );");
+    $this->ExecuteQuery ( "CREATE TABLE shortcut (idsys INTEGER PRIMARY KEY,
+                                                  name TEXT,
+                                                  idcomponent NUMERIC,
+                                                  command TEXT,
+                                                  FOREIGN KEY(idcomponent) REFERENCES component(idsys) ON DELETE CASCADE
+                                                  );");
+    $this->ExecuteQuery ( "CREATE TABLE configuration ( idsys INTEGER PRIMARY KEY,
+                                                        name TEXT,
+                                                        width NUMERIC,
+                                                        height NUMERIC,
+                                                        background TEXT);");
+    $this->ExecuteQuery ( "INSERT INTO configuration VALUES (1, 'default', 310, 150, '/css/background.jpg');");
+  }
 
   return $this;
 }

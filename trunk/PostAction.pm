@@ -93,7 +93,6 @@ sub DeleteTab
   my $alps = $this->{'alps'};
   /tabid=(.*)/;
   $sqlite->ExecuteQuery("DELETE FROM tab WHERE idsys=$1");
-  $sqlite->ExecuteQuery("DELETE FROM component WHERE idtab=$1");
   $alps->PrintResponse( 'text/html', '' );
   return 1;
 }
@@ -204,6 +203,7 @@ sub AddShortcut
   my $sqlite = $this->{'alps'}->{'sqlite'};
   my $alps = $this->{'alps'};
   my ($idcomponent, $name, $command) = /idcomponent=(\d+)&name=(.*)&command=(.*)/;
+  $name =~ s/\+/ /g;
   my $response = $sqlite->ExecuteQuery("INSERT INTO shortcut (idcomponent, name, command) VALUES ($idcomponent,'$name','$command')");
   my ($idsys, $name, $idcomponent, $command) = @{$response->[0]};
   my $json = to_json( { 'idsys'       => $idsys,
