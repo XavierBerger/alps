@@ -100,7 +100,7 @@ sub AddComponent
               <div>
                 COMMENTS
               </div>
-              <ul class='sortable' style='position: relative; top: -60px;'>";
+              <ul class='sortable' id='componentPanelList-$idsys' style='position: relative; top: -60px;'>";
   my $query = "SELECT * FROM shortcut WHERE idcomponent=$idsys";
   my $response = $sqlite->ExecuteQuery($query);
   foreach my $row (@$response) {
