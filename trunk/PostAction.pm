@@ -26,7 +26,8 @@ sub new
     "MoveComponent",
     "AddComponent",
     "DeleteComponent",
-    "EditComponent"
+    "EditComponent",
+    "AddShortcut"
   );
 
   $this->{'function'} = \@functions;
@@ -193,4 +194,17 @@ sub MoveComponent
   $alps->PrintResponse( 'text/html', '' );
   return 1;
 }
+
+sub AddShortcut
+{
+  my $this = shift;
+  $_ = uri_unescape( shift );
+  $this->Debug(3,"$_");
+
+  my $sqlite = $this->{'alps'}->{'sqlite'};
+  my $alps = $this->{'alps'};
+  $alps->PrintResponse( 'text/html', "TO BE CONTINUED: $_" );
+  return 1;
+}
+
 1;
