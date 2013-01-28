@@ -388,12 +388,15 @@ sub Print {
         // Add new tab by sending a post to server
         function addshortcut() {
             $.post("AddShortcut" ,
-                  { idsys:    componentIdsys,
-                    name:     $("#shortcut_name").val(),
-                    command : $("#shortcut_command").val()
+                  { idcomponent:  componentIdsys,
+                    name:         $("#shortcut_name").val(),
+                    command :     $("#shortcut_command").val()
                   },
                   function(data) {
-
+                    $("#componentPanelList-"+data.idcomponent)
+                      .append(" ] . $this->{'alps'}->{'page'}->AddShortcut( '"+data.idsys+"',
+                                                                            '"+data.name+"',
+                                                                            '"+data.command+"'). q[ ");
                   },
                   "json")
             .fail(

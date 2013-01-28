@@ -203,7 +203,14 @@ sub AddShortcut
 
   my $sqlite = $this->{'alps'}->{'sqlite'};
   my $alps = $this->{'alps'};
-  $alps->PrintResponse( 'text/html', "TO BE CONTINUED: $_" );
+  my ($idcomponent, $name, $command) = /idcomponent=(\d+)&name=(.*)&command=(.*)/;
+  my $response = $sqlite->ExecuteQuery("INSERT INTO shortcut (idcomponent, name, command) VALUES ($idcomponent,'$name','$command')");
+  my ($idsys, $name, $idcomponent, $command) = @{$response->[0]};
+  my $json = to_json( { 'idsys'       => $idsys,
+                        'name'        => $name,
+                        'idcomponent' => $idcomponent,
+                        'command'     => $command } );
+  $alps->PrintResponse( 'text/html', $json );
   return 1;
 }
 
