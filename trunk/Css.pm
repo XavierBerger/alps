@@ -166,7 +166,41 @@ sub Print {
       width: ".($componentWidth)."px;
       height: ".($componentHeight)."px;
     }
-  ";
+
+
+    .shortcutList {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      width: 54em;
+    }
+    .shortcutList li {
+      //margin: 0 3px 3px 3px;
+      padding: 0.2em;
+      padding-left: 1.5em;
+      height: 17px;
+    }
+
+    .shortcutList li .move {
+      position: absolute;
+      margin-left: -1.3em;
+    }
+
+    .shortcutList li input {
+      width: 25em;
+    }
+
+    .shortcutList li .close {
+      position: absolute;
+      margin-top: -1.5em;
+      margin-left: 50.75em;
+    }
+
+    .ui-state-highlight {
+      height: 1.5em;
+      line-height: 1.2em;
+    }
+   ";
 
 }
 

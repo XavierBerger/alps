@@ -31,6 +31,7 @@ sub Debug
 sub AddTab {
   my $this = shift;
   my $tabId = shift;
+  my $chomp = shift || 1;
 
   $this->Debug(4,"");
 
@@ -61,7 +62,9 @@ sub AddTab {
       </div>
   ";
 
-  ($tabId >= 0) and return "\n    <div id='tabs-$tabId'>$content  </div>";
+  $chomp and $content =~ s/\n//g ;
+
+  ($tabId >= 0) and return "    <div id='tabs-$tabId'>$content  </div>";
   return $content;
 }
 
@@ -72,7 +75,7 @@ sub AddShortcut
   my $idsys = shift;
   my $name = shift;
   my $link = shift;
-  return "<li class='toto'><a href='$link'>$name</a></li>";
+  return "<li idsys='$idsys' class='sortable'><a href='$link'>$name</a></li>";
 }
 
 sub AddComponent
@@ -100,11 +103,11 @@ sub AddComponent
               <!--div>
                 COMMENTS
               </div-->
-              <ul class='sortable' id='componentPanelList-$idsys' style='position: relative; top: -60px;'>";
-  my $query = "SELECT * FROM shortcut WHERE idcomponent=$idsys";
+              <ul class='sortable shortcutlist' id='shortcutList-$idsys' style='position: relative; top: -60px;'>";
+  my $query = "SELECT idsys, name, command FROM shortcut WHERE idcomponent=$idsys ORDER BY ord";
   my $response = $sqlite->ExecuteQuery($query);
   foreach my $row (@$response) {
-     my ($idsys, $name, $idcomponent, $command) = @$row;
+     my ($idsys, $name,  $command) = @$row;
      $content .= $this->AddShortcut($idsys, $name, $command);
   }
   $content .= "</ul></li>";
@@ -190,11 +193,13 @@ sub Print
 
   <!-- Dialog editcomponent -->
   <div id="editcomponent" title="Edit component">
-    <form>
+    <form >
       <fieldset class="ui-helper-reset">
       <label for="editcomponent_name">Component name</label>
-      <input type="text" name="editcomponent_name" id="editcomponent_name" value="" class="ui-widget-content ui-corner-all" /><br>
-      <label for="component_comment">Shortcut list</label><br>
+      <input type="text" name="editcomponent_name" id="editcomponent_name" value="" class="ui-widget-content ui-corner-all" /><br><br>
+      <label for="component_comment">Shurtcuts: Text to display + command</label><br><br>
+      <ul id="shortcutList"  class='shortcutList' width="100%">
+      </ul>
       </fieldset>
     </form>
   </div>
@@ -256,7 +261,7 @@ sub Print
       foreach my $row (@$response) {
          my ($idsys,$name, $ord) = @$row;
          $content .= "      <li><a href=\"#tabs-$idsys\">$name</a></li>\n";
-         $tab .= $this->AddTab($idsys);
+         $tab .= $this->AddTab($idsys,0);
       }
       $content .= qq[    </ul>$tab
   </div>
