@@ -46,6 +46,7 @@ sub new
                                                   name TEXT,
                                                   idcomponent NUMERIC,
                                                   command TEXT,
+                                                  ord NUMERIC,
                                                   FOREIGN KEY(idcomponent) REFERENCES component(idsys) ON DELETE CASCADE
                                                   );");
     $this->ExecuteQuery ( "CREATE TABLE configuration ( idsys INTEGER PRIMARY KEY,
@@ -76,7 +77,6 @@ sub ExecuteQuery {
 
   my $dbh = $this->{'dbh'};
 
-  #Execute the query
   $this->Debug(4,$query);
   my $isInsert = $query =~ /INSERT INTO (\S+)/;
   my $result;
@@ -96,48 +96,5 @@ sub ExecuteQuery {
   $sth->finish();
   return $result;
 }
-
-=cut
-sub ExecuteQuery {
-  my $this = shift;
-  my $query = shift;
-  my $keyfield = shift;
-
-  $this->Debug(3,"");
-
-  my $dbh = $this->{'dbh'};
-
-  #Execute the query
-  $this->Debug(4,$query);
-  my $isInsert = $query =~ /INSERT INTO (\S+)/;
-  my $result;
-
-  my $sth = $dbh->prepare( $query );
-  $sth->execute();
-  $dbh->commit();
-  if ( $isInsert ) {
-    my $rowid = $dbh->sqlite_last_insert_rowid();
-    $sth = $dbh->prepare( "SELECT * FROM $1 WHERE rowid=$rowid" );
-    $sth->execute()
-  }
-  if ( $keyfield ){
-    $result = $sth->fetchall_hashref($keyfield);
-    #foreach my $key ( keys(%{$result}) ) {
-    #  print "$result->{$key}->{'name'}\n";
-    #}
-  }
-  else {
-    $result = $sth->fetchall_arrayref();
-    foreach my $row ( @{$result} ) {
-      $this->Debug(5,"=> @$row");
-}
-  }
-
-  $sth->finish();
-  $dbh->disconnect();
-  return $result;
-}
-=cut
-
 
 1;

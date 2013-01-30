@@ -27,7 +27,8 @@ sub new
     "AddComponent",
     "DeleteComponent",
     "EditComponent",
-    "AddShortcut"
+    "AddShortcut",
+    "MoveShortcut"
   );
 
   $this->{'function'} = \@functions;
@@ -72,6 +73,7 @@ sub AddTab
 
   my $sqlite = $this->{'alps'}->{'sqlite'};
   my $alps = $this->{'alps'};
+  s/\+/ /g;
   /title=(.*)/;
   $this->Debug(3,"$1");
   my $response = $sqlite->ExecuteQuery("INSERT INTO tab (name, ord) VALUES ( '$1', 9999 )");
@@ -122,6 +124,7 @@ sub AddComponent
   my $sqlite = $this->{'alps'}->{'sqlite'};
   my $alps = $this->{'alps'};
   my ($tabid, $name, $comment) = /tabid=(\d+)&name=(.*)&comment=(.*)/;
+  $name =~ s/\+/ /g;
   my $response = $sqlite->ExecuteQuery("SELECT idsys FROM tab ORDER BY ord LIMIT 1 OFFSET $tabid");
   my $idtab = $response->[0]->[0];
   if ( $name eq 'Component' ){
@@ -137,7 +140,6 @@ sub AddComponent
                         'comment' => $comment,
                         'order'   => $order } );
   $this->Debug(3,"$json");
-  #$alps->PrintResponse( 'application/json', $json );
   $alps->PrintResponse( 'text/html', $json );
   return 1;
 
@@ -188,6 +190,28 @@ sub MoveComponent
   my $order=1;
   foreach my $idsys ( @order ) {
     $sqlite->ExecuteQuery("UPDATE component SET ord=$order WHERE idsys=$idsys");
+    $order++;
+  }
+  $alps->PrintResponse( 'text/html', '' );
+  return 1;
+}
+
+sub MoveShortcut
+{
+  my $this = shift;
+  $_ = uri_unescape( shift );
+  $this->Debug(3,"$_");
+
+  my $sqlite = $this->{'alps'}->{'sqlite'};
+  my $alps = $this->{'alps'};
+
+  s/shortcut\[\]=//g;
+  s/&/,/g;
+  /order=(.*)/;
+  my @order = split (',', $1);
+  my $order=1;
+  foreach my $idsys ( @order ) {
+    $sqlite->ExecuteQuery("UPDATE shortcut SET ord=$order WHERE idsys=$idsys");
     $order++;
   }
   $alps->PrintResponse( 'text/html', '' );
