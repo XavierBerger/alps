@@ -172,7 +172,7 @@ sub Print {
       list-style-type: none;
       margin: 0;
       padding: 0;
-      width: 54em;
+      width: ".($componentWidth+30)."px;
     }
     .shortcutList li {
       //margin: 0 3px 3px 3px;
@@ -187,13 +187,19 @@ sub Print {
     }
 
     .shortcutList li input {
-      width: 25em;
+      width: ".($componentWidth)."px;
     }
 
     .shortcutList li .close {
       position: absolute;
       margin-top: -1.5em;
-      margin-left: 50.75em;
+      margin-left: ".($componentWidth-7)."px;
+    }
+
+    .shortcutList li .edit {
+      position: absolute;
+      margin-top: -1.5em;
+      margin-left: ".($componentWidth - 20)."px;
     }
 
     .ui-state-highlight {

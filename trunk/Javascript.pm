@@ -100,31 +100,6 @@ sub EditDialog
   ];
 }
 
-sub DeleteDialogOLD
-{
-  my $this=shift;
-  my $dialogName = shift;
-  $this->Debug(4,"");
-  return qq[
-         var \$$dialogName = \$( '.$dialogName' ).live( "click", function() {
-          \$( '#$dialogName' ).dialog({
-            resizable: false,
-            height:140,
-            modal: true,
-            buttons: {
-              Cancel: function() {
-                \$( this ).dialog( "close" );
-              },
-              "Delete": function() {
-                $dialogName();
-                \$( this ).dialog( "close" );
-              }
-            }
-          })
-        });
-  ];
-}
-
 sub DeleteDialog
 {
   my $this=shift;
