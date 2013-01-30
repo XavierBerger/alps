@@ -13,7 +13,7 @@ use HTTP::Status;
 use CGI;
 use CGI::Session;
 use Css;
-use Javascript;
+use Preprocessor;
 use PostAction;
 
 sub new
@@ -83,11 +83,10 @@ sub PrintResponse {
 sub PrintJavascript
 {
   my $this = shift;
-  my $connection = shift;
   $this->Debug(2,"");
 
-  my $javascript = $this->{'javascript'};
-  $this->PrintResponse( 'text/javascript', $javascript->Print() );
+  my $preprocessor = $this->{'preprocessor'};
+  $this->PrintResponse( 'text/javascript', $preprocessor->Print("js/alps.pre.js") );
   return 1;
 }
 
@@ -96,8 +95,8 @@ sub PrintCss
   my $this = shift;
   $this->Debug(2,"");
 
-  my $css = $this->{'css'};
-  $this->PrintResponse( 'text/css', $css->Print() );
+  my $preprocessor = $this->{'preprocessor'};
+  $this->PrintResponse( 'text/css', $preprocessor->Print("css/alps.pre.css") );
   return 1;
 }
 
@@ -116,7 +115,6 @@ sub SendFile
 sub PrintPage
 {
   my $this = shift;
-  my $connection = shift;
   $this->Debug(2,"");
 
   $this->PrintResponse( 'text/html', $this->{'page'}->Print() );
@@ -144,8 +142,13 @@ sub DoGET
   -e ".$path" and $this->SendFile($connection, ".$path") and return;
 
   #If the file is not existing it means we need to construct it
-  $path =~ /alps\.css$/ and $this->PrintCss($connection) and return;
-  $path =~ /alps\.js$/ and $this->PrintJavascript($connection) and return;
+  #if ( $path =~ /alps\.((css|javascript))$/ ) {
+  #  my $preprocessor = $this->{'preprocessor'};
+  #  print "\n\n>>>> $1 <<<<\n\n";
+  #  $this->PrintResponse( 'text/$1', $preprocessor->Print("$1/alps.pre.$1") );
+  #}
+  $path =~ /alps\.css$/ and $this->PrintCss() and return;
+  $path =~ /alps\.js$/ and $this->PrintJavascript() and return;
 
   #Finally send error
   $connection->send_error();
@@ -187,10 +190,10 @@ sub Run
   $this->{'sqlite'} = Sqlite->new($this);
   $this->{'page'} = Page->new($this);
   $this->{'css'} = Css->new($this);
-  $this->{'javascript'} = Javascript->new($this);
+  $this->{'preprocessor'} = Preprocessor->new($this);
   $this->{'postAction'} = PostAction->new($this);
 
-  #Create the server
+  # Create the server
   if ( $this->{'ssl'} ) {
     $this->{'server'} = new HTTP::Daemon::SSL( ReuseAddr => 1,
                                                LocalAddr => $this->{'addr'},

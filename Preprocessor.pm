@@ -1,7 +1,7 @@
 my $verbose=0;
 
 
-package Javascript;
+package Preprocessor;
 
 use strict;
 use POSIX;
@@ -36,30 +36,30 @@ sub AddDialog
   my $this=shift;
   my $dialogName = shift;
   $this->Debug(4,"");
-  return q[
-        var $]."$dialogName".q[ = $( "#]."$dialogName".q[" ).dialog({
+  return qq[
+        var \$$dialogName = \$( "#$dialogName" ).dialog({
             autoOpen: false,
             modal: true,
             buttons: {
               Add: function() {
-                  ]."$dialogName".q[();
-                  $( this ).dialog( "close" );
+                  $dialogName();
+                  \$( this ).dialog( "close" );
                 },
                 Cancel: function() {
-                  $( this ).dialog( "close" );
+                  \$( this ).dialog( "close" );
                 }
               },
               open: function() {
-                $( "form", $]."$dialogName".q[ )[0].focus();
+                \$( "form", \$$dialogName )[0].focus();
               },
               close: function() {
-                $( "form", $]."$dialogName".q[ )[0].reset();
+                \$( "form", \$$dialogName )[0].reset();
               }
             });
 
-            $( "form", $]."$dialogName".q[ ).submit(function() {
-              ]."$dialogName".q[();
-              $]."$dialogName".q[.dialog( "close" );
+            \$( "form", \$$dialogName ).submit(function() {
+              $dialogName();
+              \$$dialogName.dialog( "close" );
               return false;
             });
       ];
@@ -127,8 +127,8 @@ sub DeleteDialog
 
 sub Print {
   my $this = shift;
-  $this->Debug(3,"");
-  #$this->RawPrint();
+  my $filename = shift;
+  $this->Debug(3,$filename);
   my $page = $this->{'alps'}->{'page'};
   my $content;
 
@@ -137,7 +137,11 @@ sub Print {
   my $response = $this->{'alps'}->{'sqlite'}->ExecuteQuery($query);
   my $id = ($response->[0]->[0])+1 || 0;
 
-  open (FILE, "js/alps.pre.js");
+  my $componentWidth=310;
+  my $componentHeight=150;
+  my $componentButtonOffset=92;
+
+  open (FILE, $filename);
   while (<FILE>) {
     if (/\[% (.*) %\]/ ){
       my $tag = eval ($1);
