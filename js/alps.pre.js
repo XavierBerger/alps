@@ -210,7 +210,13 @@ $(function () {
     $(".shortcutList").empty();
     $("#shortcutList-" + senderId + " li").each(function (i) {
       var idshortcut = $(this).attr('idsys');
-      content = content + "<li idsys='"+idshortcut+"' id='shortcut-"+idshortcut+"'class='ui-state-default'><span class='ui-icon ui-icon-arrowthick-2-n-s move'></span><input id='name-"+ idshortcut +"' class='text ui-widget-content ui-corner-all' value='" + $(this).children('a').text() + "'><input id='link-"+ idshortcut +"' class='text ui-widget-content ui-corner-all' value='" + $(this).children('a').attr('href') + "'><a id='deleteshurtcut-"+idshortcut+"'><span class='ui-icon ui-icon-close close'></span></a></li>"
+      content = content + "<li idsys='"+idshortcut+"' id='shortcut-"+idshortcut+"' class='ui-state-default'>"+
+                            "<span class='ui-icon ui-icon-arrowthick-2-n-s move'></span>"+
+                            "<span id='name-"+ idshortcut +"' class='text'>" + $(this).children('a').text() + "</span>"+
+                            "<input type='hidden' id='link-"+ idshortcut +"' value='" + $(this).children('a').attr('href') + "'>"+
+                            "<div id='editshortcut-"+idshortcut+"' class='ui-icon ui-icon-pencil edit editshortcut' role='button'></div>"+
+                            "<div id='deleteshortcut-"+idshortcut+"' class='ui-icon ui-icon-close close deleteshortcut' role='button'></div>"+
+                          "</li>"
     });
     $('.shortcutList').append(content);
 
@@ -228,7 +234,7 @@ $(function () {
           $("#shortcutList li").each(function (i) {
             var idshortcut = $(this).attr('idsys');
             var link = $("#link-" + idshortcut).val();
-            var name = $("#name-" + idshortcut).val();
+            var name = $("#name-" + idshortcut).html();
             content = content + "<li idsys='"+ idshortcut +"' class='sortable'><a href='"+ link +"'>"+ name +"</a></li>";
           });
           $("#shortcutList-" + senderId).append(content);
@@ -243,10 +249,10 @@ $(function () {
     $.post("EditComponent", {
       idsys : senderId,
       newname : $("#editcomponent_name").val()
-    },
+      },
       function (data) {
       $("#componenttitle-" + senderId + " b").text(data.newname)
-    },
+      },
       "json")
     .fail(
       function (data) {
@@ -292,6 +298,17 @@ $(function () {
   }
 
   $(".shortcutList").sortable();
+
+  // Add addshortcut button
+  $(".editshortcut").live("click", function () {
+    alert("editshortcut");
+  });
+
+    // Add addshortcut button
+  $(".deleteshortcut").live("click", function () {
+    alert("deleteshortcut");
+  });
+
 
 
 
