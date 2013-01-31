@@ -217,6 +217,18 @@ sub Print
     </form>
   </div>
 
+  <!-- Dialog editshortcut -->
+  <div id="editshortcut" title="Edit shortcut">
+    <form >
+      <fieldset class="ui-helper-reset">
+      <label for="editshortcut_name">Shortcut name</label>
+      <input type="text" name="editshortcut_name" id="editshortcut_name" value="" class="ui-widget-content ui-corner-all" /><br>
+      <label for="editshortcut_command">Command</label>
+      <input type="text" name="editshortcut_command" id="editshortcut_command" value="" class="ui-widget-content ui-corner-all" /><br>
+      </fieldset>
+    </form>
+  </div>
+
   <!--Dialog Help-->
   <div id="help" title="Help">
     <h3>Administator's Landing Page Shortcuts</h3>
