@@ -12,7 +12,6 @@ use HTTP::Daemon::SSL;
 use HTTP::Status;
 use CGI;
 use CGI::Session;
-use Css;
 use Preprocessor;
 use PostAction;
 
@@ -80,26 +79,6 @@ sub PrintResponse {
   $connection->close();
 }
 
-sub PrintJavascript
-{
-  my $this = shift;
-  $this->Debug(2,"");
-
-  my $preprocessor = $this->{'preprocessor'};
-  $this->PrintResponse( 'text/javascript', $preprocessor->Print("js/alps.pre.js") );
-  return 1;
-}
-
-sub PrintCss
-{
-  my $this = shift;
-  $this->Debug(2,"");
-
-  my $preprocessor = $this->{'preprocessor'};
-  $this->PrintResponse( 'text/css', $preprocessor->Print("css/alps.pre.css") );
-  return 1;
-}
-
 sub SendFile
 {
   my $this = shift;
@@ -142,13 +121,11 @@ sub DoGET
   -e ".$path" and $this->SendFile($connection, ".$path") and return;
 
   #If the file is not existing it means we need to construct it
-  #if ( $path =~ /alps\.((css|javascript))$/ ) {
-  #  my $preprocessor = $this->{'preprocessor'};
-  #  print "\n\n>>>> $1 <<<<\n\n";
-  #  $this->PrintResponse( 'text/$1', $preprocessor->Print("$1/alps.pre.$1") );
-  #}
-  $path =~ /alps\.css$/ and $this->PrintCss() and return;
-  $path =~ /alps\.js$/ and $this->PrintJavascript() and return;
+  if ( $path =~ /alps\.((css|js))$/ ) {
+    my $preprocessor = $this->{'preprocessor'};
+    my $content = $preprocessor->Print("$1/alps.pre.$1");
+    $this->PrintResponse( 'text/'. ( $1=~/js/ ? "javascript" : "css"), $content );
+  }
 
   #Finally send error
   $connection->send_error();
@@ -189,7 +166,6 @@ sub Run
   # Create objects used to construct page
   $this->{'sqlite'} = Sqlite->new($this);
   $this->{'page'} = Page->new($this);
-  $this->{'css'} = Css->new($this);
   $this->{'preprocessor'} = Preprocessor->new($this);
   $this->{'postAction'} = PostAction->new($this);
 

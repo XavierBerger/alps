@@ -36,33 +36,33 @@ sub AddDialog
   my $this=shift;
   my $dialogName = shift;
   $this->Debug(4,"");
-  return qq[
-        var \$$dialogName = \$( "#$dialogName" ).dialog({
+  return "
+        var \$$dialogName = \$( '#$dialogName' ).dialog({
             autoOpen: false,
             modal: true,
             buttons: {
               Add: function() {
                   $dialogName();
-                  \$( this ).dialog( "close" );
+                  \$( this ).dialog( 'close' );
                 },
                 Cancel: function() {
-                  \$( this ).dialog( "close" );
+                  \$( this ).dialog( 'close' );
                 }
               },
               open: function() {
-                \$( "form", \$$dialogName )[0].focus();
+                \$( 'form', \$$dialogName )[0].focus();
               },
               close: function() {
-                \$( "form", \$$dialogName )[0].reset();
+                \$( 'form', \$$dialogName )[0].reset();
               }
             });
 
-            \$( "form", \$$dialogName ).submit(function() {
+            \$( 'form', \$$dialogName ).submit(function() {
               $dialogName();
-              \$$dialogName.dialog( "close" );
+              \$$dialogName.dialog( 'close' );
               return false;
             });
-      ];
+      ";
 }
 
 sub EditDialog
@@ -70,34 +70,34 @@ sub EditDialog
   my $this=shift;
   my $dialogName = shift;
   $this->Debug(4,"");
-  return qq[
-        var \$$dialogName = \$( "#$dialogName" ).dialog({
+  return "
+        var \$$dialogName = \$( '#$dialogName' ).dialog({
             autoOpen: false,
             modal: true,
             width: 'auto',
             buttons: {
                 Update: function() {
                   $dialogName();
-                  \$( this ).dialog( "close" );
+                  \$( this ).dialog( 'close' );
                 },
                 Cancel: function() {
-                  \$( this ).dialog( "close" );
+                  \$( this ).dialog( 'close' );
                 }
               },
               open: function() {
-                \$( "form", \$$dialogName )[0].focus();
+                \$( 'form', \$$dialogName )[0].focus();
               },
               close: function() {
-                \$( "form", \$$dialogName )[0].reset();
+                \$( 'form', \$$dialogName )[0].reset();
               }
             });
 
-            \$( "form", \$$dialogName ).submit(function() {
+            \$( 'form', \$$dialogName ).submit(function() {
               $dialogName();
-              \$$dialogName.dialog( "close" );
+              \$$dialogName.dialog( 'close' );
               return false;
             });
-  ];
+  ";
 }
 
 sub DeleteDialog
@@ -105,24 +105,24 @@ sub DeleteDialog
   my $this=shift;
   my $dialogName = shift;
   $this->Debug(4,"");
-  return qq[
-         var \$$dialogName = \$( '.$dialogName' ).live( "click", function() {
+  return "
+         var \$$dialogName = \$( '.$dialogName' ).live( 'click', function() {
           \$( '#$dialogName' ).dialog({
             resizable: false,
             height:140,
             modal: true,
             buttons: {
               Cancel: function() {
-                \$( this ).dialog( "close" );
+                \$( this ).dialog( 'close' );
               },
-              "Delete": function() {
+              'Delete': function() {
                 $dialogName();
-                \$( this ).dialog( "close" );
+                \$( this ).dialog( 'close' );
               }
             }
           })
         });
-  ];
+  ";
 }
 
 sub Print {
