@@ -28,7 +28,8 @@ sub new
     "DeleteComponent",
     "EditComponent",
     "AddShortcut",
-    "MoveShortcut"
+    "MoveShortcut",
+    "DeleteShortcut"
   );
 
   $this->{'function'} = \@functions;
@@ -228,13 +229,27 @@ sub AddShortcut
   my $alps = $this->{'alps'};
   my ($idcomponent, $name, $command) = /idcomponent=(\d+)&name=(.*)&command=(.*)/;
   $name =~ s/\+/ /g;
-  my $response = $sqlite->ExecuteQuery("INSERT INTO shortcut (idcomponent, name, command) VALUES ($idcomponent,'$name','$command')");
-  my ($idsys, $name, $idcomponent, $command) = @{$response->[0]};
+  my $response = $sqlite->ExecuteQuery("INSERT INTO shortcut (idcomponent, name, command, ord) VALUES ($idcomponent,'$name','$command',9999)");
+  my ($ord, $idsys, $name, $idcomponent, $command, ) = @{$response->[0]};
   my $json = to_json( { 'idsys'       => $idsys,
                         'name'        => $name,
                         'idcomponent' => $idcomponent,
                         'command'     => $command } );
   $alps->PrintResponse( 'text/html', $json );
+  return 1;
+}
+
+sub DeleteShortcut
+{
+  my $this = shift;
+  $_ = uri_unescape( shift );
+  $this->Debug(3,"$_");
+
+  my $sqlite = $this->{'alps'}->{'sqlite'};
+  my $alps = $this->{'alps'};
+  /shortcutId=(.*)/;
+  $sqlite->ExecuteQuery("DELETE FROM shortcut WHERE idsys=$1");
+  $alps->PrintResponse( 'text/html', '' );
   return 1;
 }
 
