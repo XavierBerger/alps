@@ -203,12 +203,12 @@ $(function () {
 
   // editcomponent button
   $(".editcomponent").live("click", function () {
-    senderId = $(this).attr('id').substr(14, 100);
-    $("#editcomponent_name").val($("#componenttitle-" + senderId + " b").text())
+    componentId = $(this).attr('id').substr(14, 100);
+    $("#editcomponent_name").val($("#componenttitle-" + componentId + " b").text())
 
     var content = "";
     $(".shortcutList").empty();
-    $("#shortcutList-" + senderId + " li").each(function (i) {
+    $("#shortcutList-" + componentId + " li").each(function (i) {
       var idshortcut = $(this).attr('idsys');
       content = content + "<li idsys='"+idshortcut+"' id='shortcut-"+idshortcut+"' class='ui-state-default'>"+
                             "<span class='ui-icon ui-icon-arrowthick-2-n-s move'></span>"+
@@ -230,14 +230,14 @@ $(function () {
       },
         function (data) {
           var content="";
-          $("#shortcutList-" + senderId).empty();
+          $("#shortcutList-" + componentId).empty();
           $("#shortcutList li").each(function (i) {
             var idshortcut = $(this).attr('idsys');
             var link = $("#link-" + idshortcut).val();
             var name = $("#name-" + idshortcut).html();
-            content = content + "<li idsys='"+ idshortcut +"' class='sortable'><a href='"+ link +"'>"+ name +"</a></li>";
+            content = content + "<li idsys='"+ idshortcut +"' id='shortcut-"+idshortcut+"'class='sortable'><a href='"+ link +"'>"+ name +"</a></li>";
           });
-          $("#shortcutList-" + senderId).append(content);
+          $("#shortcutList-" + componentId).append(content);
       }, "json")
       .fail(
         function (data) {
@@ -247,11 +247,11 @@ $(function () {
       });
 
     $.post("EditComponent", {
-      idsys : senderId,
+      idsys : componentId,
       newname : $("#editcomponent_name").val()
       },
       function (data) {
-      $("#componenttitle-" + senderId + " b").text(data.newname)
+      $("#componenttitle-" + componentId + " b").text(data.newname)
       },
       "json")
     .fail(
@@ -299,18 +299,33 @@ $(function () {
 
   $(".shortcutList").sortable();
 
-  // Add addshortcut button
+  // addshortcut button
   $(".editshortcut").live("click", function () {
     alert("editshortcut");
   });
 
-    // Add addshortcut button
+  [% $this->DeleteDialog('deleteshortcut') %]
+
+  // deleteshortcut button
   $(".deleteshortcut").live("click", function () {
-    alert("deleteshortcut");
+    shortcutId = $(this).parent().attr('idsys');
+    $deleteshortcut.dialog("open");
   });
 
-
-
+  // deleteshortcut function
+  function deleteshortcut() {
+    $.post("DeleteShortcut", {
+      shortcutId : shortcutId
+    }, function (data) {
+      $("#shortcut-" + shortcutId).remove();
+    })
+    .fail(
+      function (data) {
+      alert("Error code: " + data.status + "\n"
+         + data.statusText + "\n"
+         + data.responseText);
+    });
+  }
 
 
   // ---------------------------------------------------------

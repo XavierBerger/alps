@@ -156,6 +156,7 @@ sub Print
   ].
   $this->HtmlDeleteDialog("deletetab", "tab").
   $this->HtmlDeleteDialog("deletecomponent", "component").
+  $this->HtmlDeleteDialog("deleteshortcut", "shortcut").
   q[
 
   <!-- Dialog addtab -->
