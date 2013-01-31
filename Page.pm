@@ -271,7 +271,7 @@ sub Print
   <div class="smallline">
     <div class="title">
       <sup>
-        Copyright &copy; Xavier Berger - License GPLv3 -
+        Copyright &copy; X\@v - License GPLv3 -
         <a class="smallline" href="http://code.google.com/p/alps/">
           http://code.google.com/p/alps/
         </a>
