@@ -112,10 +112,10 @@ sub DoGET
   $this->Debug(1,$path);
 
   #The file need to be known or we return an error
-  $path ~~ @{$this->{'paths'}} or $connection->send_error() and return;
+  $path ~~ @{$this->{'paths'}} or $connection->send_error(404) and return;
 
   #The main page (/) is requested
-  $path =~ /^\/$/ and $this->PrintPage($connection) and return;
+  $path =~ /^\/$/ and $this->PrintPage() and return;
 
   #If the file exists we return it
   -e ".$path" and $this->SendFile($connection, ".$path") and return;
@@ -124,7 +124,7 @@ sub DoGET
   if ( $path =~ /alps\.((css|js))$/ ) {
     my $preprocessor = $this->{'preprocessor'};
     my $content = $preprocessor->Print("$1/alps.pre.$1");
-    $this->PrintResponse( 'text/'. ( $1=~/js/ ? "javascript" : "css"), $content );
+    $this->PrintResponse( 'text/'. ( $1=~/js/ ? "javascript" : "css"), $content ) and return;
   }
 
   #Finally send error
@@ -146,8 +146,6 @@ sub DoPOST
   my $postAction = $this->{'postAction'};
 
   $path ~~ @{$postAction->{'function'}} or $connection->send_error(500,"Function Unknown: $path") and return;
-
-
 
   $postAction->$path($request->content) and return;
 
