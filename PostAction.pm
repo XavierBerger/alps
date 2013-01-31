@@ -29,7 +29,8 @@ sub new
     "EditComponent",
     "AddShortcut",
     "MoveShortcut",
-    "DeleteShortcut"
+    "DeleteShortcut",
+    "EditShortcut"
   );
 
   $this->{'function'} = \@functions;
@@ -250,6 +251,25 @@ sub DeleteShortcut
   /shortcutId=(.*)/;
   $sqlite->ExecuteQuery("DELETE FROM shortcut WHERE idsys=$1");
   $alps->PrintResponse( 'text/html', '' );
+  return 1;
+}
+
+sub EditShortcut
+{
+  my $this = shift;
+  $_ = uri_unescape( shift );
+  $this->Debug(3,"$_");
+
+  my $sqlite = $this->{'alps'}->{'sqlite'};
+  my $alps = $this->{'alps'};
+  my ($idsys, $name, $command) = /shortcutId=(\d+)&newname=(.*)&newcommand=(.*)/;
+  $name =~ s/\+/ /g;
+  $command =~ s/\+/ /g;
+  $sqlite->ExecuteQuery("UPDATE shortcut SET name='$name', command='$command' WHERE idsys=$idsys");
+  my $json = to_json( { 'name'=>$name,
+                        'command'=>$command
+   } );
+  $alps->PrintResponse( 'application/json', $json );
   return 1;
 }
 

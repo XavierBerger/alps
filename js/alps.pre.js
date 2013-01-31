@@ -299,10 +299,35 @@ $(function () {
 
   $(".shortcutList").sortable();
 
-  // addshortcut button
+  // editshortcut dialog
+  [% $this->EditDialog('editshortcut') %]
+
+  // editshortcut button
   $(".editshortcut").live("click", function () {
-    alert("editshortcut");
+    shortcutId = $(this).parent().attr('idsys');
+    $("#editshortcut_name").val($("#name-" + shortcutId).html());
+    $("#editshortcut_command").val($("#link-" + shortcutId).val());
+    $editshortcut.dialog("open");
   });
+
+  // edittab function
+  function editshortcut() {
+    $.post("EditShortcut", {
+      shortcutId : shortcutId,
+      newname : $('#editshortcut_name').val(),
+      newcommand: $('#editshortcut_command').val()
+    }, function (data) {
+      $("#link-" + shortcutId).val(data.command);
+      $("#name-" + shortcutId).html(data.name);
+    }, "json")
+    .fail(
+      function (data) {
+      alert("Error code: " + data.status + "\n"
+         + data.statusText + "\n"
+         + data.responseText);
+    });
+  }
+
 
   [% $this->DeleteDialog('deleteshortcut') %]
 
