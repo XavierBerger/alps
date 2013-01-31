@@ -197,7 +197,7 @@ sub Print
       <fieldset class="ui-helper-reset">
       <label for="editcomponent_name">Component name</label>
       <input type="text" name="editcomponent_name" id="editcomponent_name" value="" class="ui-widget-content ui-corner-all" /><br><br>
-      <label for="component_comment">Shurtcuts: Text to display + command</label><br><br>
+      <label for="component_comment">Shurtcuts:</label><br><br>
       <ul id="shortcutList"  class='shortcutList' width="100%">
       </ul>
       </fieldset>
