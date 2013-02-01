@@ -48,12 +48,6 @@ sub new
 
   $this->{'paths'} = \@paths;
 
-
-  $this->{'cgi'} = new CGI;
-
-  my $sid = $this->{'cgi'}->cookie("CGISESSID") || undef;
-  $this->{'session'} =  new CGI::Session(undef, $sid, { Directory=>"/tmp" } );
-
   return $this;
 }
 
@@ -188,10 +182,10 @@ sub Run
         my $method = "Do".$request->method();
         $this->$method($request);
       }
-      $this->{'ssl'} and $this->{'connection'}->send_error();
       $this->{'connection'}->close;
       undef($this->{'connection'});
     }
+    $this->Debug(1,"400 Bad Request");
   }
 }
 
@@ -216,6 +210,8 @@ Options:
   -p(ort) PORT      port used by alps' web server (default=8080)
   -a(ddr) ADDRESS   address used by alps' web server (default=0.0.0.0)
   -s(sl)            activate https
+  -d(atabase)       define sqlite database to use
+  -l(ogfile)        define log output (default=STDERR - not modifiable yet)
   -v([v]+)          debug level (default=0)
 
 Official website: http://code.google.com/p/alps/
@@ -234,6 +230,7 @@ sub alps_main {
     /-a(ddr)?/ and $alps->{'addr'} = shift and next;
     /-s(sl)?/ and $alps->{'ssl'} = 1 and next;
     /-l(ogfile)?/ and $verbose ||= 1 and $alps->{'log'} = shift and next;
+    /-d(atabase)?/ and $alps->{'database'} = shift and next;
     /-h(elp)?$/ and Usage();
     /^-([v]+)$/ and $verbose = length $1 and next;
   }
@@ -241,6 +238,7 @@ sub alps_main {
   #Set default values
   $alps->{'port'} ||= 8080;
   $alps->{'addr'} ||= '0.0.0.0';
+  $alps->{'database'} ||= 'alps.sqlite';
 
   # Manage Ctrl+C
   $SIG{'INT'} = sub { $alps->Close() };
