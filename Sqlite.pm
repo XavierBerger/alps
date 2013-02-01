@@ -18,7 +18,9 @@ sub new
   $this->Debug(3,"");
 
   #Open the database
-  $this->{'dsn'} = "dbi:SQLite:dbname=alps.sqlite";
+  $this->{'dsn'} = "dbi:SQLite:dbname=$this->{'alps'}->{'database'}";
+  $this->Debug(1,"Using database $this->{'alps'}->{'database'}");
+
   my $user = '';
   my $password = '';
   my %attr = ( RaiseError => 1, AutoCommit => 0 );
