@@ -182,13 +182,16 @@ sub Run
   $this->Debug(1,"< URL:", $this->{'server'}->url, ">");
 
   #Process requests
-  while ( $this->{'connection'} = $this->{'server'}->accept) {
-    while (my $request = $this->{'connection'}->get_request) {
-      my $method = "Do".$request->method();
-      $this->$method($request);
+  for (;;) {
+    while ( $this->{'connection'} = $this->{'server'}->accept) {
+      while (my $request = $this->{'connection'}->get_request) {
+        my $method = "Do".$request->method();
+        $this->$method($request);
+      }
+      $this->{'ssl'} and $this->{'connection'}->send_error();
+      $this->{'connection'}->close;
+      undef($this->{'connection'});
     }
-    $this->{'connection'}->close;
-    undef($this->{'connection'});
   }
 }
 
@@ -206,7 +209,17 @@ package main;
 sub Usage
 {
   die <<EOF
-  Help to be written
+Usage: alps.pl [options]
+
+Options:
+  -h(elp)           show this help message and exit
+  -p(ort) PORT      port used by alps' web server (default=8080)
+  -a(ddr) ADDRESS   address used by alps' web server (default=0.0.0.0)
+  -s(sl)            activate https
+  -v([v]+)          debug level (default=0)
+
+Official website: http://code.google.com/p/alps/
+
 EOF
 }
 
@@ -227,7 +240,7 @@ sub alps_main {
 
   #Set default values
   $alps->{'port'} ||= 8080;
-  $alps->{'addr'} ||= '127.0.0.1';
+  $alps->{'addr'} ||= '0.0.0.0';
 
   # Manage Ctrl+C
   $SIG{'INT'} = sub { $alps->Close() };
