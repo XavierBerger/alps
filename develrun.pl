@@ -11,7 +11,7 @@ sub startProcess
   if($pid = fork) {
       print STDERR "parent pid=$$ child pid=$pid\n";
   }elsif (defined $pid) {
-      print STDERR "child pid=$$ pid=$pid\n";
+      #print STDERR "child pid=$$ pid=$pid\n";
       # Must do setpgrp as child for nohup and job control stuff...
       setpgrp(0, $$);
       exec "./alps.pl -vvvv" || die "Bad exec $!";
