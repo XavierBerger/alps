@@ -194,7 +194,7 @@ sub Close
   my $this = shift;
   $this->Debug(1, "Closing server.");
   $this->{'server'}->close;
-  die;
+  exit;
 }
 1;
 
@@ -244,7 +244,6 @@ sub alps_main {
   $SIG{'INT'} = sub { $alps->Close() };
 
   $alps->Run;
-
 }
 
 alps_main(@ARGV) unless caller;
