@@ -1,0 +1,21 @@
+{
+    "name": "Alps",
+    "description": "Administrator Land Page Server",
+    "version": "1.0",
+	"manifest_version": 2,
+    "icons": {
+        "128": "128.png"
+    },
+    "app": {
+        "urls": [
+            "http://127.0.0.1:8080/"
+        ],
+        "launch": {
+            "web_url": "http://127.0.0.1:8080/"
+        }
+    },
+    "permissions": [
+        "unlimitedStorage",
+        "notifications"
+    ]
+}
