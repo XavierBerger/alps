@@ -137,7 +137,7 @@ sub Print {
   my $response = $this->{'alps'}->{'sqlite'}->ExecuteQuery($query);
   my $id = ($response->[0]->[0])+1 || 0;
 
-  my $componentWidth=297;
+  my $componentWidth=298;
   my $componentHeight=150;
   my $componentButtonOffset=92;
 
